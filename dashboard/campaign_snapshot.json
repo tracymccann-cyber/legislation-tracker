@@ -1,0 +1,100 @@
+{
+  "source_url": "https://www.endjunkfees.com/",
+  "fetched_at": "2026-04-30T22:47:17Z",
+  "fetch_error": null,
+  "active_legislation": [
+    {
+      "state": "New York",
+      "bills": [
+        {
+          "label": "S363",
+          "url": "https://www.nysenate.gov/legislation/bills/2025/S363"
+        },
+        {
+          "label": "A1821",
+          "url": "https://www.nysenate.gov/legislation/bills/2025/A1821"
+        }
+      ]
+    },
+    {
+      "state": "Utah",
+      "bills": [
+        {
+          "label": "HB29",
+          "url": "https://le.utah.gov/Session/2026/bills/static/HB0029.html"
+        }
+      ]
+    },
+    {
+      "state": "Ohio",
+      "bills": [
+        {
+          "label": "SB336",
+          "url": "https://www.ohiosenate.gov/legislation/136/sb336"
+        }
+      ]
+    },
+    {
+      "state": "Arizona",
+      "bills": [
+        {
+          "label": "HB2299",
+          "url": "https://apps.azleg.gov/BillStatus/BillOverview/84034"
+        }
+      ]
+    },
+    {
+      "state": "Iowa",
+      "bills": [
+        {
+          "label": "HF2047",
+          "url": "https://www.legis.iowa.gov/legislation/BillBook?ba=HF%202047&ga=91"
+        }
+      ]
+    },
+    {
+      "state": "Hawaii",
+      "bills": [
+        {
+          "label": "SB2183",
+          "url": "https://data.capitol.hawaii.gov/session/measure_indiv.aspx?billtype=SB&billnumber=2183&year=2026"
+        }
+      ]
+    },
+    {
+      "state": "West Virginia",
+      "bills": [
+        {
+          "label": "HB4739",
+          "url": "https://www.wvlegislature.gov/Bill_Status/Bills_history.cfm?input=4739&year=2026&sessiontype=RS&btype=bill"
+        }
+      ]
+    },
+    {
+      "state": "Tennessee",
+      "bills": [
+        {
+          "label": "SB1991/HB2233",
+          "url": "https://wapp.capitol.tn.gov/apps/BillInfo/Default?BillNumber=SB1991&ga=114"
+        }
+      ]
+    },
+    {
+      "state": "Illinois",
+      "bills": [
+        {
+          "label": "HB0062",
+          "url": "https://www.ilga.gov/Legislation/BillStatus/FullText?GAID=18&DocNum=62&DocTypeID=HB&LegId=155736&SessionID=114"
+        }
+      ]
+    }
+  ],
+  "enacted_or_effective": [
+    "California approved a junk fee ban in 2023 that went into effect in July 2024.",
+    "Minnesota approved a junk fee ban in 2024 that went into effect in January 2025.",
+    "Massachusetts implemented a junk fee ban through attorney general rule making in March 2025.",
+    "Colorado approved a ban in April 2025 that goes into effect in January 2026.",
+    "Virginia approved a ban in May 2025 that goes into effect in July 2025.",
+    "Connecticut approved a ban in September 2025 that goes into effect in July 2026."
+  ]
+}

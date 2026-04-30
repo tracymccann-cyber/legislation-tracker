@@ -12,8 +12,9 @@ Alerts when:
 The first run for a given bill records its existing action history quietly for milestones (2–4); use
 --bootstrap to silence the "new bill" lines as well while you seed the database.
 
-endjunkfees.com is a campaign site without a machine-readable feed; this tool uses the same
-underlying public legislative data Open States aggregates.
+endjunkfees.com has no public API; this tool uses Open States for bill tracking. For the campaign’s
+state-by-state list (active 2026 bills plus enacted lines), run `python sync_endjunkfees_snapshot.py`
+to refresh `dashboard/campaign_snapshot.json` (run locally when you want the campaign panel updated).
 
 Usage:
   export OPENSTATES_API_KEY=...
@@ -27,9 +28,8 @@ After each run, by default, dashboard/data.json is refreshed for the static UI i
 dashboard/ folder on Vercel with Root Directory set to dashboard).
 Set DASHBOARD_DIR or pass --no-dashboard to skip.
 
-GitHub Actions: see .github/workflows/publish-dashboard.yml — caches tracker_state.db between runs,
-bootstraps once when the cache is empty, deploys dashboard/ via GitHub Pages on push to main/master,
-daily schedule, and manual runs (enable Pages with source "GitHub Actions" and add the OPENSTATES_API_KEY secret).
+Hosting: run this script locally (see QUICKSTART.txt). GitHub Actions only deploys the static
+dashboard/ folder — see .github/workflows/deploy-dashboard.yml (no Open States API in CI).
 """
 
 from __future__ import annotations
@@ -127,28 +127,105 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 USER_AGENT = "junk-fee-legislation-tracker/1.0 (+https://openstates.org/)"
 
+# Serialized pacing for every Open States HTTP GET (search + bill detail).
+_last_openstates_monotonic: float = 0.0
+# Total 429 responses since last successful Open States GET (fail fast instead of retrying for many minutes).
+_openstates_429_since_ok: int = 0
+
+
+def _openstates_abort_429_threshold() -> int:
+    raw = (os.environ.get("OPENSTATES_ABORT_AFTER_429_COUNT") or "22").strip() or "22"
+    try:
+        n = int(raw)
+    except ValueError:
+        n = 22
+    return max(8, min(n, 200))
+
+
+def _openstates_note_success() -> None:
+    global _openstates_429_since_ok
+    _openstates_429_since_ok = 0
+
+
+def _openstates_note_429_and_maybe_abort() -> None:
+    global _openstates_429_since_ok
+    _openstates_429_since_ok += 1
+    cap = _openstates_abort_429_threshold()
+    if _openstates_429_since_ok >= cap:
+        raise SystemExit(
+            f"Open States returned HTTP 429 (rate limited) {cap} times in a row without a successful "
+            "response. Stop the job, wait 15–30 minutes, then try again with fewer SEARCH_QUERIES phrases, "
+            "set JURISDICTIONS to narrow scope, raise OPENSTATES_MIN_INTERVAL_SEC (e.g. 2), and avoid "
+            "running the tracker locally at the same time as GitHub Actions (same API key shares quota). "
+            "See env.example."
+        )
+
+
+def _openstates_throttle() -> None:
+    """Minimum gap between Open States requests to reduce 429s (set OPENSTATES_MIN_INTERVAL_SEC=0 to disable)."""
+    raw = (os.environ.get("OPENSTATES_MIN_INTERVAL_SEC") or "1.0").strip() or "1.0"
+    try:
+        gap = float(raw)
+    except ValueError:
+        gap = 1.0
+    if gap <= 0:
+        return
+    global _last_openstates_monotonic
+    now = time.monotonic()
+    wait = gap - (now - _last_openstates_monotonic)
+    if wait > 0:
+        time.sleep(wait)
+    _last_openstates_monotonic = time.monotonic()
+
 
 def _retry_wait_seconds(attempt: int, retry_after_header: str | None) -> float:
+    raw_cap = (os.environ.get("OPENSTATES_429_WAIT_CAP_SEC") or "600").strip() or "600"
+    try:
+        cap = float(raw_cap)
+    except ValueError:
+        cap = 600.0
+    cap = max(30.0, min(cap, 3600.0))
     if retry_after_header:
         try:
-            return min(float(retry_after_header), 120.0)
+            return min(float(retry_after_header), cap)
         except ValueError:
             pass
-    return min(2.0 * (2**attempt), 120.0)
+    return min(2.0 * (2**attempt), cap)
 
 
-def http_get_json(url: str, max_retries: int = 10) -> dict[str, Any]:
+def _openstates_max_retries() -> int:
+    raw = (os.environ.get("OPENSTATES_MAX_RETRIES") or "14").strip() or "14"
+    try:
+        n = int(raw)
+    except ValueError:
+        n = 14
+    return max(3, min(n, 40))
+
+
+def http_get_json(url: str, max_retries: int | None = None) -> dict[str, Any]:
+    if max_retries is None:
+        max_retries = _openstates_max_retries()
+    is_os = "openstates.org" in url
+    if is_os:
+        _openstates_throttle()
     for attempt in range(max_retries + 1):
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         try:
             with urllib.request.urlopen(req, timeout=90) as resp:
-                return json.loads(resp.read().decode("utf-8"))
+                data = json.loads(resp.read().decode("utf-8"))
+                if is_os:
+                    _openstates_note_success()
+                return data
         except urllib.error.HTTPError as e:
             if e.code != 429 or attempt >= max_retries:
                 raise
+            if is_os:
+                _openstates_note_429_and_maybe_abort()
             wait = _retry_wait_seconds(attempt, e.headers.get("Retry-After"))
             print(f"Open States rate limit (429); waiting {wait:.0f}s then retrying...", file=sys.stderr)
             time.sleep(wait)
+            if is_os:
+                _openstates_throttle()
 
 
 def http_post_json(url: str, payload: dict[str, Any], max_retries: int = 6) -> None:
@@ -338,9 +415,15 @@ def write_dashboard(out_dir: Path, payload: dict[str, Any]) -> Path:
 
 def _request_pacing() -> tuple[float, float]:
     """(delay between paginated bill search requests, gap before starting a new query phrase)."""
-    page_delay = float(os.environ.get("OPENSTATES_PAGE_DELAY_SEC", "1.25"))
-    query_gap = float(os.environ.get("OPENSTATES_QUERY_GAP_SEC", "3.0"))
-    return (max(page_delay, 0.0), max(query_gap, 0.0))
+
+    def _f(name: str, default: str) -> float:
+        raw = (os.environ.get(name) or default).strip() or default
+        try:
+            return max(0.0, float(raw))
+        except ValueError:
+            return max(0.0, float(default))
+
+    return (_f("OPENSTATES_PAGE_DELAY_SEC", "2.5"), _f("OPENSTATES_QUERY_GAP_SEC", "6.0"))
 
 
 def collect_unique_bills(
@@ -350,22 +433,37 @@ def collect_unique_bills(
 ) -> dict[str, dict[str, Any]]:
     page_delay, query_gap = _request_pacing()
     by_id: dict[str, dict[str, Any]] = {}
+    scope = "all jurisdictions" if not jurisdictions else ", ".join(jurisdictions)
+    print(
+        f"Open States: {len(queries)} search phrase(s), {scope}. "
+        f"There are intentional pauses (~{query_gap:.0f}s between phrases, ~{page_delay:.0f}s between pages); "
+        "this is normal.",
+        file=sys.stderr,
+    )
     for i, q in enumerate(queries):
         if i:
+            print(f"Waiting {query_gap:.0f}s before next phrase (rate pacing)…", file=sys.stderr)
             time.sleep(query_gap)
         page = 1
         while True:
             data = search_bills(api_key, q, jurisdictions, page)
             results = data.get("results") or []
+            pag = data.get("pagination") or {}
+            max_page = int(pag.get("max_page") or 1)
+            print(
+                f"  phrase {i + 1}/{len(queries)} {q!r} — page {page}/{max_page}, {len(results)} result(s), "
+                f"{len(by_id)} unique bill(s) so far",
+                file=sys.stderr,
+            )
             for b in results:
                 bid = b.get("id")
                 if bid:
                     by_id[bid] = b
-            pag = data.get("pagination") or {}
-            max_page = int(pag.get("max_page") or 1)
             if page >= max_page:
                 break
             page += 1
+            if page_delay > 0:
+                print(f"  waiting {page_delay:.0f}s before next results page…", file=sys.stderr)
             time.sleep(page_delay)
     return by_id
 
@@ -415,6 +513,7 @@ def main() -> None:
         except urllib.error.HTTPError as e:
             print(f"Warning: could not load WATCH_BILLS {j}:{sess}:{ident}: {e}", file=sys.stderr)
 
+    print(f"Processing {len(bills)} bill(s) for database / dashboard…", file=sys.stderr)
     for bill_id, b in bills.items():
         ident = b.get("identifier") or ""
         title = b.get("title") or ""

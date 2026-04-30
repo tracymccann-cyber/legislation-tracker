@@ -132,15 +132,53 @@
       color: var(--muted);
     }
     footer a { color: var(--accent); }
+    .campaign {
+      margin-bottom: 2.5rem;
+      padding: 1.25rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .campaign h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .campaign .sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      font-family: ui-monospace, Menlo, monospace;
+    }
+    .campaign h3 {
+      margin: 1rem 0 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .campaign ul.enacted {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .campaign ul.enacted li { margin: 0.4rem 0; }
+    .campaign .warn { color: var(--warn); font-size: 0.85rem; margin-bottom: 0.75rem; }
+    .bill-links a { margin-right: 0.35rem; }
   </style>
 </head>
 <body>
   <header>
     <h1>Junk-fee &amp; pricing transparency bills</h1>
     <p>
-      Snapshot from your tracker (Open States data). Share this folder on any static host,
-      or run <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python -m http.server 8765 --directory dashboard</code> and open
-      <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">http://127.0.0.1:8765/</code>.
+      Two feeds fill this page: <strong>Open States matches</strong> below (bill stage and milestone dates from the
+      <a href="https://openstates.org/">Open States</a> API via <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python tracker.py</code> → <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">data.json</code>)
+      and the <strong>campaign snapshot</strong> (state lists from <a href="https://www.endjunkfees.com/">End Junk Fees</a> via <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python sync_endjunkfees_snapshot.py</code> → <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">campaign_snapshot.json</code>).
+      Commit those JSON files after each refresh so Vercel/GitHub Pages shows them. Local preview:
+      <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python -m http.server 8765 --directory dashboard</code>
+      then <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">http://127.0.0.1:8765/</code>.
     </p>
     <p class="meta" id="generated">Loading…</p>
   </header>
@@ -149,6 +187,16 @@
       <label for="q">Filter</label>
       <input type="search" id="q" placeholder="State, bill number, title…" autocomplete="off" />
     </div>
+    <section class="campaign" id="campaign" aria-labelledby="campaign-heading">
+      <h2 id="campaign-heading">Campaign snapshot (End Junk Fees)</h2>
+      <p class="sub" id="campaign-meta"></p>
+      <div id="campaign-warn" class="warn" hidden></div>
+      <h3>Active legislation (site list)</h3>
+      <div id="campaign-active-wrap"></div>
+      <h3>Enacted or scheduled (site list)</h3>
+      <div id="campaign-enacted-wrap"></div>
+    </section>
+    <h2 style="font-size:1.05rem;margin:0 0 0.75rem;font-weight:600;">Open States matches</h2>
     <div id="table-wrap"></div>
   </main>
   <footer>
@@ -176,7 +224,63 @@
       if (m.signed_or_law) parts.push("Law " + m.signed_or_law);
       return parts.length ? parts.join(" · ") : "—";
     }
-    function render(data, filter) {
+    function campaignMatchesFilter(row, f) {
+      if (!f) return true;
+      const bills = row.bills || [];
+      const billHay = bills.map(function (b) { return (b.label || "") + " " + (b.url || ""); }).join(" ").toLowerCase();
+      const hay = (row.state || "").toLowerCase() + " " + billHay;
+      return hay.indexOf(f) !== -1;
+    }
+    function enactedMatchesFilter(line, f) {
+      if (!f) return true;
+      return String(line || "").toLowerCase().indexOf(f) !== -1;
+    }
+    function renderCampaign(camp, filter) {
+      const f = (filter || "").toLowerCase().trim();
+      const meta = document.getElementById("campaign-meta");
+      const warn = document.getElementById("campaign-warn");
+      const src = camp && camp.source_url ? camp.source_url : "https://www.endjunkfees.com/";
+      let metaLine = "Source: " + src;
+      if (camp && camp.fetched_at) metaLine += " · Fetched " + camp.fetched_at;
+      else if (camp && !camp.fetch_error) metaLine += " · Fetched time not set";
+      meta.textContent = metaLine;
+      if (camp && camp.fetch_error) {
+        warn.hidden = false;
+        warn.textContent = "Last fetch failed: " + camp.fetch_error + " (showing any data already on disk).";
+      } else {
+        warn.hidden = true;
+        warn.textContent = "";
+      }
+      const active = (camp && camp.active_legislation) ? camp.active_legislation.filter(function (r) {
+        return campaignMatchesFilter(r, f);
+      }) : [];
+      const enacted = (camp && camp.enacted_or_effective) ? camp.enacted_or_effective.filter(function (line) {
+        return enactedMatchesFilter(line, f);
+      }) : [];
+      const aw = document.getElementById("campaign-active-wrap");
+      if (!active.length) {
+        aw.innerHTML = '<p class="empty" style="padding:0.75rem 0;">No active rows match your filter (or snapshot empty). Run <strong>python sync_endjunkfees_snapshot.py</strong>.</p>';
+      } else {
+        const rows = active.map(function (r) {
+          const links = (r.bills || []).map(function (b) {
+            const u = b.url ? encodeURI(String(b.url)) : "";
+            const lab = escapeHtml(b.label || "");
+            return u ? '<a href="' + u + '" rel="noopener noreferrer">' + lab + "</a>" : lab;
+          }).join(" · ");
+          return "<tr><td>" + escapeHtml(r.state) + '</td><td class="bill-links">' + links + "</td></tr>";
+        }).join("");
+        aw.innerHTML = "<table><thead><tr><th>State</th><th>Bills (campaign links)</th></tr></thead><tbody>" + rows + "</tbody></table>";
+      }
+      const ew = document.getElementById("campaign-enacted-wrap");
+      if (!enacted.length) {
+        ew.innerHTML = '<p class="empty" style="padding:0.75rem 0;">No enacted lines match your filter (or snapshot empty).</p>';
+      } else {
+        ew.innerHTML = "<ul class=\"enacted\">" + enacted.map(function (line) {
+          return "<li>" + escapeHtml(line) + "</li>";
+        }).join("") + "</ul>";
+      }
+    }
+    function render(data, camp, filter) {
       const f = (filter || "").toLowerCase().trim();
       const bills = (data.bills || []).filter(function (b) {
         if (!f) return true;
@@ -184,7 +288,9 @@
         return hay.indexOf(f) !== -1;
       });
       const gen = document.getElementById("generated");
-      gen.textContent = "Generated " + (data.generated_at || "?") + " · " + bills.length + " bill(s) shown";
+      gen.textContent = "Open States snapshot " + (data.generated_at || "?") + " · " + bills.length + " bill(s) shown";
+
+      renderCampaign(camp || {}, filter);
 
       const wrap = document.getElementById("table-wrap");
       if (!bills.length) {
@@ -203,18 +309,29 @@
       return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
     async function load() {
-      const r = await fetch("data.json", { cache: "no-store" });
-      if (!r.ok) throw new Error("Could not load data.json (" + r.status + ")");
-      return r.json();
+      const billsP = fetch("data.json", { cache: "no-store" }).then(function (r) {
+        if (!r.ok) throw new Error("Could not load data.json (" + r.status + ")");
+        return r.json();
+      });
+      const campP = fetch("campaign_snapshot.json", { cache: "no-store" }).then(function (r) {
+        if (!r.ok) return { source_url: "https://www.endjunkfees.com/", fetch_error: "campaign_snapshot.json missing (" + r.status + ")", active_legislation: [], enacted_or_effective: [] };
+        return r.json();
+      }).catch(function () {
+        return { source_url: "https://www.endjunkfees.com/", fetch_error: "could not read campaign_snapshot.json", active_legislation: [], enacted_or_effective: [] };
+      });
+      return Promise.all([billsP, campP]);
     }
-    load().then(function (data) {
+    load().then(function (pair) {
+      const data = pair[0];
+      const camp = pair[1];
       const input = document.getElementById("q");
-      function go() { render(data, input.value); }
+      function go() { render(data, camp, input.value); }
       input.addEventListener("input", go);
       go();
     }).catch(function (e) {
       document.getElementById("generated").textContent = "Could not load data.json — " + e.message;
       document.getElementById("table-wrap").innerHTML = '<p class="empty">Place <strong>data.json</strong> next to this file (run the tracker once).</p>';
+      renderCampaign({ fetch_error: null, active_legislation: [], enacted_or_effective: [] }, "");
     });
   </script>
 </body>

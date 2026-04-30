@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Junk-fee legislation tracker</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222d;
+      --border: #2d3a4a;
+      --text: #e7ecf3;
+      --muted: #8b9aab;
+      --accent: #3d9a78;
+      --warn: #c9a227;
+      --law: #5b8def;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      padding: 2rem 1.5rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(165deg, var(--surface) 0%, var(--bg) 100%);
+    }
+    header h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.65rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    header p {
+      margin: 0;
+      max-width: 42rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .meta {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    main {
+      padding: 1.25rem 1.5rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    label { font-size: 0.85rem; color: var(--muted); }
+    input[type="search"] {
+      flex: 1;
+      min-width: 12rem;
+      padding: 0.5rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .bill-id {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    a {
+      color: var(--law);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .stage {
+      display: inline-block;
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-family: system-ui, sans-serif;
+    }
+    .stage-introduced { background: #2a3544; color: var(--muted); }
+    .stage-chamber { background: #3a3220; color: #e8d49a; }
+    .stage-law { background: #1f2d4a; color: #a8c4ff; }
+    .stage-unknown { background: #2a2a2a; color: #888; }
+    .milestones {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: ui-monospace, Menlo, monospace;
+      line-height: 1.35;
+    }
+    .empty {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+    footer {
+      padding: 1rem 1.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Junk-fee &amp; pricing transparency bills</h1>
+    <p>
+      Snapshot from your tracker (Open States data). Share this folder on any static host,
+      or run <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python -m http.server 8765 --directory dashboard</code> and open
+      <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">http://127.0.0.1:8765/</code>.
+    </p>
+    <p class="meta" id="generated">Loading…</p>
+  </header>
+  <main>
+    <div class="toolbar">
+      <label for="q">Filter</label>
+      <input type="search" id="q" placeholder="State, bill number, title…" autocomplete="off" />
+    </div>
+    <div id="table-wrap"></div>
+  </main>
+  <footer>
+    Legislative data via <a href="https://openstates.org/">Open States</a>. Campaign context:
+    <a href="https://www.endjunkfees.com/">End Junk Fees</a>.
+  </footer>
+  <script>
+    function stageClass(stage) {
+      if (stage === "law") return "stage stage-law";
+      if (stage === "chamber") return "stage stage-chamber";
+      if (stage === "introduced") return "stage stage-introduced";
+      return "stage stage-unknown";
+    }
+    function stageLabel(stage) {
+      if (stage === "law") return "Signed / law";
+      if (stage === "chamber") return "Chamber passed";
+      if (stage === "introduced") return "Introduced";
+      return "Tracking";
+    }
+    function fmtMilestones(m) {
+      const parts = [];
+      if (m.introduction) parts.push("Intro " + m.introduction);
+      if (m.lower_passage) parts.push("Lower " + m.lower_passage);
+      if (m.upper_passage) parts.push("Upper " + m.upper_passage);
+      if (m.signed_or_law) parts.push("Law " + m.signed_or_law);
+      return parts.length ? parts.join(" · ") : "—";
+    }
+    function render(data, filter) {
+      const f = (filter || "").toLowerCase().trim();
+      const bills = (data.bills || []).filter(function (b) {
+        if (!f) return true;
+        const hay = [b.jurisdiction, b.identifier, b.title, b.session].join(" ").toLowerCase();
+        return hay.indexOf(f) !== -1;
+      });
+      const gen = document.getElementById("generated");
+      gen.textContent = "Generated " + (data.generated_at || "?") + " · " + bills.length + " bill(s) shown";
+
+      const wrap = document.getElementById("table-wrap");
+      if (!bills.length) {
+        wrap.innerHTML = '<p class="empty">No bills match your filter (or data.json is empty). Run <strong>python tracker.py</strong> to refresh.</p>';
+        return;
+      }
+      const rows = bills.map(function (b) {
+        const link = b.url
+          ? '<a href="' + encodeURI(String(b.url)) + '" rel="noopener noreferrer">' + escapeHtml(b.identifier) + "</a>"
+          : escapeHtml(b.identifier);
+        return "<tr><td>" + escapeHtml(b.jurisdiction) + '</td><td class="bill-id">' + link + '</td><td><span class="' + stageClass(b.stage) + '">' + stageLabel(b.stage) + "</span></td><td>" + escapeHtml(b.title) + '</td><td class="milestones">' + escapeHtml(fmtMilestones(b.milestones || {})) + "</td></tr>";
+      }).join("");
+      wrap.innerHTML = "<table><thead><tr><th>State</th><th>Bill</th><th>Stage</th><th>Title</th><th>Milestones</th></tr></thead><tbody>" + rows + "</tbody></table>";
+    }
+    function escapeHtml(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+    async function load() {
+      const r = await fetch("data.json", { cache: "no-store" });
+      if (!r.ok) throw new Error("Could not load data.json (" + r.status + ")");
+      return r.json();
+    }
+    load().then(function (data) {
+      const input = document.getElementById("q");
+      function go() { render(data, input.value); }
+      input.addEventListener("input", go);
+      go();
+    }).catch(function (e) {
+      document.getElementById("generated").textContent = "Could not load data.json — " + e.message;
+      document.getElementById("table-wrap").innerHTML = '<p class="empty">Place <strong>data.json</strong> next to this file (run the tracker once).</p>';
+    });
+  </script>
+</body>
+</html>

@@ -15,6 +15,9 @@ The first run for a given bill records its existing action history quietly for m
 Search hits are narrowed by default: a bill is kept only if its title contains a phrase from
 BILL_TOPIC_KEYWORDS (see env.example). That avoids unrelated bills whose text matched the search API.
 
+Optional: set DASHBOARD_ONLY_WITH_MILESTONES=1 so data.json lists only bills with at least one milestone
+date (introduced, chamber passage, or signed/law) derived from Open States action classifications.
+
 endjunkfees.com has no public API; this tool uses Open States for bill tracking. For the campaign’s
 state-by-state list (active 2026 bills plus enacted lines), run `python sync_endjunkfees_snapshot.py`
 to refresh `dashboard/campaign_snapshot.json` (run locally when you want the campaign panel updated).
@@ -404,6 +407,11 @@ def stage_from_milestones(m: dict[str, str | None]) -> str:
     return "unknown"
 
 
+def _env_dashboard_only_with_milestones() -> bool:
+    raw = (os.environ.get("DASHBOARD_ONLY_WITH_MILESTONES") or "0").strip().lower()
+    return raw in ("1", "true", "yes", "on")
+
+
 def build_dashboard_payload(
     conn: sqlite3.Connection,
     bills: dict[str, dict[str, Any]],
@@ -419,6 +427,8 @@ def build_dashboard_payload(
         created[str(bid)] = str(ts)
 
     rows: list[dict[str, Any]] = []
+    skipped_no_progress = 0
+    only_ms = _env_dashboard_only_with_milestones()
     for bill_id, b in bills.items():
         ident = b.get("identifier") or ""
         title = b.get("title") or ""
@@ -427,6 +437,11 @@ def build_dashboard_payload(
         url = b.get("openstates_url")
         actions = list(b.get("actions") or [])
         milestones = derive_milestones(actions)
+        if only_ms and not any(
+            milestones.get(k) for k in ("introduction", "lower_passage", "upper_passage", "signed_or_law")
+        ):
+            skipped_no_progress += 1
+            continue
         rows.append(
             {
                 "bill_id": bill_id,
@@ -440,6 +455,12 @@ def build_dashboard_payload(
                 "stage": stage_from_milestones(milestones),
                 "milestones": milestones,
             }
+        )
+    if only_ms and skipped_no_progress:
+        print(
+            f"Dashboard: omitted {skipped_no_progress} bill(s) with no dated milestones "
+            "(DASHBOARD_ONLY_WITH_MILESTONES=1).",
+            file=sys.stderr,
         )
     rows.sort(key=lambda r: (r["jurisdiction"].lower(), (r["identifier"] or "").lower()))
     return {"generated_at": _utc_now_iso(), "source": "Open States API v3", "bills": rows}

@@ -27,6 +27,7 @@ import tracker as t
 
 def _rows_from_bills(bills: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    only_ms = t._env_dashboard_only_with_milestones()
     for bill_id, b in bills.items():
         ident = b.get("identifier") or ""
         title = b.get("title") or ""
@@ -35,6 +36,10 @@ def _rows_from_bills(bills: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
         url = b.get("openstates_url")
         actions = list(b.get("actions") or [])
         milestones = t.derive_milestones(actions)
+        if only_ms and not any(
+            milestones.get(k) for k in ("introduction", "lower_passage", "upper_passage", "signed_or_law")
+        ):
+            continue
         rows.append(
             {
                 "bill_id": bill_id,

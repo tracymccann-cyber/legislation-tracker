@@ -1,58 +1,7 @@
 {
-  "generated_at": "2026-05-01T16:06:25+00:00",
-  "source": "Open States API v3 (bills kept only if title matches BILL_TOPIC_KEYWORDS; filtered locally without re-fetch)",
+  "generated_at": "2026-05-01T17:01:25+00:00",
+  "source": "Open States API v3 (bills kept only if title matches BILL_TOPIC_KEYWORDS; DASHBOARD_ONLY_WITH_MILESTONES (bills with at least one milestone date only; refreshed offline)",
   "bills": [
-    {
-      "bill_id": "ocd-bill/0bb4a051-a5c3-4f08-bfca-780a6e9c8fc6",
-      "identifier": "A 6663",
-      "title": "Establishes the \"New York junk fee prevention act\"",
-      "jurisdiction": "New York",
-      "session": "2025-2026",
-      "url": "https://openstates.org/ny/bills/2025-2026/A6663/",
-      "tracked_since": "2026-05-01 09:45:39",
-      "updated_at": "2026-03-18T11:22:50.056531+00:00",
-      "stage": "unknown",
-      "milestones": {
-        "introduction": null,
-        "lower_passage": null,
-        "upper_passage": null,
-        "signed_or_law": null
-      }
-    },
-    {
-      "bill_id": "ocd-bill/e5c93349-4d14-4c02-979a-59ed4440e285",
-      "identifier": "A 9192",
-      "title": "Establishes the \"New York junk fee prevention act\"",
-      "jurisdiction": "New York",
-      "session": "2023-2024",
-      "url": "https://openstates.org/ny/bills/2023-2024/A9192/",
-      "tracked_since": "2026-05-01 09:45:39",
-      "updated_at": "2024-04-20T01:24:18.382329+00:00",
-      "stage": "unknown",
-      "milestones": {
-        "introduction": null,
-        "lower_passage": null,
-        "upper_passage": null,
-        "signed_or_law": null
-      }
-    },
-    {
-      "bill_id": "ocd-bill/df20237e-36f9-4cae-a63b-64f9041d53df",
-      "identifier": "A 9604",
-      "title": "Establishes the \"New York junk fee prevention act\"",
-      "jurisdiction": "New York",
-      "session": "2025-2026",
-      "url": "https://openstates.org/ny/bills/2025-2026/A9604/",
-      "tracked_since": "2026-05-01 09:45:39",
-      "updated_at": "2026-04-24T06:37:42.757837+00:00",
-      "stage": "unknown",
-      "milestones": {
-        "introduction": null,
-        "lower_passage": null,
-        "upper_passage": null,
-        "signed_or_law": null
-      }
-    },
     {
       "bill_id": "ocd-bill/28d3b162-fff6-4219-8af7-42ed7f3d2e9b",
       "identifier": "S 363",

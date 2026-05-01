@@ -1,5 +1,261 @@
 {
-  "generated_at": "(run python tracker.py or your GitHub Action to populate)",
+  "generated_at": "2026-05-01T09:45:39+00:00",
   "source": "Open States API v3",
-  "bills": []
+  "bills": [
+    {
+      "bill_id": "ocd-bill/5d01f73a-6b88-4711-beda-0ebc06d20385",
+      "identifier": "A 3008",
+      "title": "Enacts into law major components of legislation necessary to implement the state transportation, economic development and environmental conservation budget for the 2025-2026 state fiscal year",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/A3008/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T09:04:38.054915+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/bf4f40b4-e2b2-4d8c-a419-e55d5c730c3f",
+      "identifier": "A 3575",
+      "title": "Relates to the regulation of street vendors in N.Y. city; repealer",
+      "jurisdiction": "New York",
+      "session": "2023-2024",
+      "url": "https://openstates.org/ny/bills/2023-2024/A3575/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2024-04-19T21:59:20.473414+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/8aec909e-be83-44cf-a6d4-b78e8fe5206f",
+      "identifier": "A 3930",
+      "title": "Regulates the use of artificial intelligence in aiding decisions on rental housing and loans",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/A3930/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T11:14:28.220510+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/f48458f4-eb28-4a60-ab93-e7fdb1bac937",
+      "identifier": "A 5081",
+      "title": "Relates to the regulation of street vendors in cities with a population of one million or more; repealer",
+      "jurisdiction": "New York",
+      "session": "2021-2022",
+      "url": "https://openstates.org/ny/bills/2021-2022/A5081/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2022-03-15T13:06:10.954790+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/0bb4a051-a5c3-4f08-bfca-780a6e9c8fc6",
+      "identifier": "A 6663",
+      "title": "Establishes the \"New York junk fee prevention act\"",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/A6663/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T11:22:50.056531+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/9e44049f-1c55-481a-add7-1676630ced2b",
+      "identifier": "A 8328",
+      "title": "Relates to restricting the use of electronic monitoring and automated employment decision tools",
+      "jurisdiction": "New York",
+      "session": "2023-2024",
+      "url": "https://openstates.org/ny/bills/2023-2024/A8328/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2024-04-20T00:50:58.418667+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/e5c93349-4d14-4c02-979a-59ed4440e285",
+      "identifier": "A 9192",
+      "title": "Establishes the \"New York junk fee prevention act\"",
+      "jurisdiction": "New York",
+      "session": "2023-2024",
+      "url": "https://openstates.org/ny/bills/2023-2024/A9192/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2024-04-20T01:24:18.382329+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/df20237e-36f9-4cae-a63b-64f9041d53df",
+      "identifier": "A 9604",
+      "title": "Establishes the \"New York junk fee prevention act\"",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/A9604/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-04-24T06:37:42.757837+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/9e467a70-1a3a-4db4-baa1-aac7f4a5c7da",
+      "identifier": "S 1175",
+      "title": "Relates to the regulation of street vendors in cities with a population of one million or more; repealer",
+      "jurisdiction": "New York",
+      "session": "2021-2022",
+      "url": "https://openstates.org/ny/bills/2021-2022/S1175/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2022-02-13T00:48:40.545285+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/60752c20-e88c-4571-8a08-76f5077b4255",
+      "identifier": "S 1739",
+      "title": "Relates to the regulation of street vendors in cities with a population of one million or more; repealer",
+      "jurisdiction": "New York",
+      "session": "2023-2024",
+      "url": "https://openstates.org/ny/bills/2023-2024/S1739/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2024-04-19T20:14:28.627899+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/1c658b08-9de4-418e-be3e-dcd08721a3e0",
+      "identifier": "S 185",
+      "title": "Relates to restricting the use of electronic monitoring and automated employment decision tools",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/S185/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T08:52:24.355627+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/7caed206-4fd9-4759-aa64-d08df6053c3b",
+      "identifier": "S 3008",
+      "title": "Enacts into law major components of legislation necessary to implement the state transportation, economic development and environmental conservation budget for the 2025-2026 state fiscal year",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/S3008/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T09:00:56.685065+00:00",
+      "stage": "law",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": "2025-05-07",
+        "upper_passage": "2025-05-07",
+        "signed_or_law": "2025-05-09"
+      }
+    },
+    {
+      "bill_id": "ocd-bill/28d3b162-fff6-4219-8af7-42ed7f3d2e9b",
+      "identifier": "S 363",
+      "title": "Establishes the \"New York junk fee prevention act\"",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/S363/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-04-22T09:09:45.121805+00:00",
+      "stage": "chamber",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": "2025-06-12",
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/43042f90-73c8-4cc0-930d-a33e0243acae",
+      "identifier": "S 4928",
+      "title": "Relates to the regulation of street vendors in cities with a population of one million or more; repealer",
+      "jurisdiction": "New York",
+      "session": "2025-2026",
+      "url": "https://openstates.org/ny/bills/2025-2026/S4928/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2026-03-18T11:05:39.732603+00:00",
+      "stage": "unknown",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": null,
+        "signed_or_law": null
+      }
+    },
+    {
+      "bill_id": "ocd-bill/c09faf46-bcbc-4617-a9ca-543dc63f85c2",
+      "identifier": "S 7783",
+      "title": "Establishes the \"New York junk fee prevention act\"",
+      "jurisdiction": "New York",
+      "session": "2023-2024",
+      "url": "https://openstates.org/ny/bills/2023-2024/S7783/",
+      "tracked_since": "2026-05-01 09:45:39",
+      "updated_at": "2024-04-26T18:02:38.803852+00:00",
+      "stage": "chamber",
+      "milestones": {
+        "introduction": null,
+        "lower_passage": null,
+        "upper_passage": "2024-02-06",
+        "signed_or_law": null
+      }
+    }
+  ]
 }

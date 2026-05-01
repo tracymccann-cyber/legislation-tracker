@@ -1,0 +1,112 @@
+================================================================================
+SQUARE ONE — Junk fee legislation tracker (what actually works)
+================================================================================
+
+Your goal: track state bills (Open States) + show a shareable dashboard.
+
+GitHub Actions will NOT call Open States. You refresh data on YOUR computer, commit the files,
+GitHub only hosts the site (see section 5).
+
+--------------------------------------------------------------------------------
+1) One-time: API key on your machine only
+--------------------------------------------------------------------------------
+
+- Copy env.example to .env
+- Put your real key on the line OPENSTATES_API_KEY=...
+  Get a key: https://open.pluralpolicy.com/accounts/profile/
+
+Never commit .env (it is gitignored).
+
+--------------------------------------------------------------------------------
+1b) One-time export only (where states are at — no SQLite, no Slack)
+--------------------------------------------------------------------------------
+
+If you only want a single snapshot for a memo or slide deck:
+
+  set -a && source .env && set +a
+  python export_state_snapshot.py
+
+Creates:
+  exports/state_snapshot.json   — full detail + milestones
+  exports/state_snapshot.csv    — opens in Excel / Google Sheets
+
+Optional: set JURISDICTIONS=ny,ca,... in .env to limit states (faster, fewer API calls).
+
+--------------------------------------------------------------------------------
+2) One-time: seed the local database (no spam alerts)
+--------------------------------------------------------------------------------
+
+In a terminal, from this project folder:
+
+  cd /path/to/junk-fee-legislation-tracker
+  set -a && source .env && set +a
+  python tracker.py --bootstrap
+
+--------------------------------------------------------------------------------
+3) Day to day: poll bills + refresh dashboard files
+--------------------------------------------------------------------------------
+
+  set -a && source .env && set +a
+  python tracker.py
+  python sync_endjunkfees_snapshot.py
+
+tracker.py writes dashboard/data.json.
+sync_endjunkfees_snapshot.py writes dashboard/campaign_snapshot.json (optional).
+
+Optional Slack: set SLACK_WEBHOOK_URL in .env (see env.example).
+
+--------------------------------------------------------------------------------
+4) Preview the site on your laptop
+--------------------------------------------------------------------------------
+
+  python -m http.server 8765 --directory dashboard
+
+Browser: http://127.0.0.1:8765/
+
+--------------------------------------------------------------------------------
+5) Share it on GitHub Pages (no Open States secret in GitHub)
+--------------------------------------------------------------------------------
+
+A) Commit the dashboard folder (at least data.json, index.html, campaign_snapshot.json when you have them):
+
+  git add dashboard/
+  git commit -m "Refresh dashboard data"
+  git push
+
+B) Repo → Settings → Pages → Build and deployment → Source: GitHub Actions (one-time).
+
+C) Either push again so workflow "Deploy dashboard (static only)" runs, or:
+   Actions → Deploy dashboard (static only) → Run workflow.
+
+Your public URL appears on the successful workflow run (github-pages environment).
+
+--------------------------------------------------------------------------------
+6) Vercel (static dashboard only — use the dashboard folder as the project root)
+--------------------------------------------------------------------------------
+
+A 404 on Vercel almost always means the deployment root was wrong (e.g. looking for dist/ when
+your files are index.html + JSON directly in dashboard/).
+
+Do this once in the Vercel project:
+
+1. Settings → General
+   - Root Directory: **dashboard**  (type exactly: dashboard)
+   - Framework Preset: **Other**
+2. Settings → Build & Development (or the Build section on import)
+   - Build Command: **leave empty** (delete anything like "npm run build")
+   - Output Directory: **leave empty** or a single dot **.** — NOT "dist"
+   - Install Command: **leave empty**
+3. Remove any old "Root Directory" override that pointed at repo root with a dist output.
+4. Redeploy.
+
+dashboard/vercel.json only sets short cache headers for the JSON files; it does not change paths.
+
+After each local refresh: commit + push dashboard/ then redeploy.
+
+--------------------------------------------------------------------------------
+Optional: cron on your Mac
+--------------------------------------------------------------------------------
+
+Use launchd or crontab to run step 3 on a schedule from this directory with .env loaded.
+
+================================================================================

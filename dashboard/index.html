@@ -19,10 +19,10 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.45;
+      line-height: 1.5;
     }
     header {
       padding: 2rem 1.5rem 1.25rem;
@@ -34,12 +34,42 @@
       font-size: 1.65rem;
       font-weight: 600;
       letter-spacing: -0.02em;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     }
-    header p {
+    header .lead {
+      margin: 0 0 0.75rem;
+      max-width: 40rem;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 450;
+    }
+    header p.hint {
       margin: 0;
       max-width: 42rem;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+    }
+    details.how-built {
+      margin-top: 1rem;
+      max-width: 48rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      background: var(--surface);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    details.how-built summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text);
+    }
+    details.how-built[open] summary { margin-bottom: 0.5rem; }
+    details.how-built code {
+      background: var(--bg);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.78em;
     }
     .meta {
       margin-top: 1rem;
@@ -51,6 +81,73 @@
       padding: 1.25rem 1.5rem 3rem;
       max-width: 1100px;
       margin: 0 auto;
+    }
+    .pipeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .pipeline-legend strong { color: var(--text); font-weight: 600; margin-right: 0.25rem; }
+    .pipeline-legend .flow {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem 0.35rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .pipeline-legend .arrow { color: var(--border); user-select: none; }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+    .stat .n { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stat.muted { color: var(--muted); }
+    .os-section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin: 2rem 0 0.5rem;
+    }
+    .os-section-head h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 600;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+    .os-section-head .sub {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 28rem;
+    }
+    .table-scroll {
+      overflow-x: auto;
+      margin: 0 -0.25rem;
+      padding: 0 0.25rem;
+      -webkit-overflow-scrolling: touch;
     }
     .toolbar {
       display: flex;
@@ -83,11 +180,12 @@
     }
     th {
       color: var(--muted);
-      font-weight: 500;
-      font-size: 0.75rem;
+      font-weight: 600;
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    .col-progress { min-width: 14rem; max-width: 20rem; vertical-align: top; }
     tr:hover td { background: rgba(255,255,255,0.03); }
     .bill-id {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -112,12 +210,49 @@
     .stage-introduced { background: #2a3544; color: var(--muted); }
     .stage-chamber { background: #3a3220; color: #e8d49a; }
     .stage-law { background: #1f2d4a; color: #a8c4ff; }
-    .stage-unknown { background: #2a2a2a; color: #888; }
-    .milestones {
-      font-size: 0.78rem;
+    .stage-unknown { background: #2a2a2a; color: #aaa; }
+    .progress-wrap { min-width: 12rem; max-width: 18rem; }
+    .progress-pipe {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 0.35rem;
+    }
+    .progress-pipe .seg {
+      flex: 1;
+      min-width: 0;
+      height: 6px;
+      border-radius: 3px;
+      background: #2d3540;
+    }
+    .progress-pipe .seg.done { background: var(--accent); }
+    .progress-pipe .seg.current { background: var(--warn); box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.35); }
+    .progress-pipe .seg.law.done { background: var(--law); }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 2px;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
       color: var(--muted);
-      font-family: ui-monospace, Menlo, monospace;
+      line-height: 1.2;
+    }
+    .progress-labels span { flex: 1; min-width: 0; text-align: center; }
+    .progress-dates {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
       line-height: 1.35;
+    }
+    .title-cell {
+      font-size: 0.86rem;
+      max-width: 22rem;
+    }
+    .updated-cell {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
     .empty {
       padding: 2rem;
@@ -172,32 +307,58 @@
 <body>
   <header>
     <h1>Junk-fee &amp; pricing transparency bills</h1>
-    <p>
-      Two feeds fill this page: <strong>Open States matches</strong> below (bill stage and milestone dates from the
-      <a href="https://openstates.org/">Open States</a> API via <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python tracker.py</code> → <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">data.json</code>)
-      and the <strong>campaign snapshot</strong> (state lists from <a href="https://www.endjunkfees.com/">End Junk Fees</a> via <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python sync_endjunkfees_snapshot.py</code> → <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">campaign_snapshot.json</code>).
-      Commit those JSON files after each refresh so Vercel/GitHub Pages shows them. Local preview:
-      <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">python -m http.server 8765 --directory dashboard</code>
-      then <code style="background:var(--surface);padding:0.1rem 0.35rem;border-radius:4px;">http://127.0.0.1:8765/</code>.
+    <p class="lead">
+      See where each bill sits in the process: introduction, votes in the lower and upper chambers, then the governor
+      signing it into law. Use the filter to focus on a state or bill number.
     </p>
+    <p class="hint">
+      The table uses official actions from Open States when they match standard categories; some bills show
+      &ldquo;status unclear&rdquo; until those actions appear in the feed.
+    </p>
+    <details class="how-built">
+      <summary>For editors: how this page is built</summary>
+      <p style="margin:0 0 0.5rem;">
+        <strong>Open States</strong> rows come from <code>python tracker.py</code> (API) into <code>data.json</code>.
+        The <strong>End Junk Fees</strong> list is <code>python sync_endjunkfees_snapshot.py</code> into <code>campaign_snapshot.json</code>.
+        Commit both JSON files after each refresh so static hosts (e.g. Vercel) pick them up.
+      </p>
+      <p style="margin:0;">
+        Local preview: <code>python3 -m http.server 8765 --directory dashboard</code> then open
+        <code>http://127.0.0.1:8765/</code>.
+      </p>
+    </details>
     <p class="meta" id="generated">Loading…</p>
   </header>
   <main>
     <div class="toolbar">
-      <label for="q">Filter</label>
-      <input type="search" id="q" placeholder="State, bill number, title…" autocomplete="off" />
+      <label for="q">Filter by state, bill, or title</label>
+      <input type="search" id="q" placeholder="e.g. New York, SB336, junk fee…" autocomplete="off" />
     </div>
+    <div class="pipeline-legend" aria-hidden="false">
+      <strong>Typical path</strong>
+      <span class="flow">
+        <span>Introduced</span><span class="arrow">→</span>
+        <span>Lower chamber passed</span><span class="arrow">→</span>
+        <span>Upper chamber passed</span><span class="arrow">→</span>
+        <span>Signed or law</span>
+      </span>
+    </div>
+    <div id="os-stats" class="stats" aria-live="polite"></div>
+    <div class="os-section-head">
+      <h2>Open States tracker</h2>
+      <p class="sub">Stages and dates are derived from bill actions in Open States (not live votes).</p>
+    </div>
+    <div class="table-scroll"><div id="table-wrap"></div></div>
     <section class="campaign" id="campaign" aria-labelledby="campaign-heading">
       <h2 id="campaign-heading">Campaign snapshot (End Junk Fees)</h2>
       <p class="sub" id="campaign-meta"></p>
+      <p class="hint" style="margin:0 0 1rem; font-size:0.85rem;">State-by-state links from the campaign site. For chamber and law status, use the Open States table above when the same bill appears there.</p>
       <div id="campaign-warn" class="warn" hidden></div>
       <h3>Active legislation (site list)</h3>
       <div id="campaign-active-wrap"></div>
       <h3>Enacted or scheduled (site list)</h3>
       <div id="campaign-enacted-wrap"></div>
     </section>
-    <h2 style="font-size:1.05rem;margin:0 0 0.75rem;font-weight:600;">Open States matches</h2>
-    <div id="table-wrap"></div>
   </main>
   <footer>
     Legislative data via <a href="https://openstates.org/">Open States</a>. Campaign context:
@@ -211,18 +372,115 @@
       return "stage stage-unknown";
     }
     function stageLabel(stage) {
-      if (stage === "law") return "Signed / law";
-      if (stage === "chamber") return "Chamber passed";
+      if (stage === "law") return "Signed or law";
+      if (stage === "chamber") return "Passed a chamber";
       if (stage === "introduced") return "Introduced";
-      return "Tracking";
+      return "Status unclear";
     }
-    function fmtMilestones(m) {
+    function stageRank(stage) {
+      const o = { law: 0, chamber: 1, introduced: 2, unknown: 3 };
+      return Object.prototype.hasOwnProperty.call(o, stage) ? o[stage] : 3;
+    }
+    function sortBills(bills) {
+      return bills.slice().sort(function (a, b) {
+        const ja = (a.jurisdiction || "").toLowerCase();
+        const jb = (b.jurisdiction || "").toLowerCase();
+        if (ja !== jb) return ja < jb ? -1 : 1;
+        const ra = stageRank(a.stage);
+        const rb = stageRank(b.stage);
+        if (ra !== rb) return ra - rb;
+        const ia = (a.identifier || "").toLowerCase();
+        const ib = (b.identifier || "").toLowerCase();
+        return ia < ib ? -1 : ia > ib ? 1 : 0;
+      });
+    }
+    function milestoneDoneFlags(m) {
+      m = m || {};
+      const d0 = !!(m.introduction || m.lower_passage || m.upper_passage || m.signed_or_law);
+      const d1 = !!m.lower_passage;
+      const d2 = !!m.upper_passage;
+      const d3 = !!m.signed_or_law;
+      return [d0, d1, d2, d3];
+    }
+    function currentStepIndex(done) {
+      for (let i = 0; i < done.length; i++) {
+        if (!done[i]) return i;
+      }
+      return -1;
+    }
+    function progressHtml(b) {
+      const m = b.milestones || {};
+      const done = milestoneDoneFlags(m);
+      const cur = currentStepIndex(done);
+      const labels = ["Intro", "Lower", "Upper", "Law"];
+      let segs = "";
+      for (let i = 0; i < 4; i++) {
+        let cls = "seg";
+        if (done[i]) cls += i === 3 ? " done law" : " done";
+        else if (i === cur) cls += " current";
+        segs += '<span class="' + cls + '" title="' + escapeHtml(labels[i]) + '"></span>';
+      }
+      let labs = "";
+      for (let i = 0; i < 4; i++) {
+        labs += "<span>" + labels[i] + "</span>";
+      }
       const parts = [];
-      if (m.introduction) parts.push("Intro " + m.introduction);
-      if (m.lower_passage) parts.push("Lower " + m.lower_passage);
-      if (m.upper_passage) parts.push("Upper " + m.upper_passage);
-      if (m.signed_or_law) parts.push("Law " + m.signed_or_law);
-      return parts.length ? parts.join(" · ") : "—";
+      if (m.introduction) parts.push("Intro " + String(m.introduction).slice(0, 10));
+      if (m.lower_passage) parts.push("Lower " + String(m.lower_passage).slice(0, 10));
+      if (m.upper_passage) parts.push("Upper " + String(m.upper_passage).slice(0, 10));
+      if (m.signed_or_law) parts.push("Law " + String(m.signed_or_law).slice(0, 10));
+      const dateLine = parts.length
+        ? parts.join(" · ")
+        : "No dated milestone actions in this snapshot — open the bill on Open States for the full timeline.";
+      return (
+        '<div class="progress-wrap">' +
+        '<div class="progress-pipe">' + segs + "</div>" +
+        '<div class="progress-labels">' + labs + "</div>" +
+        '<div class="progress-dates">' + escapeHtml(dateLine) + "</div>" +
+        "</div>"
+      );
+    }
+    function fmtUpdated(iso) {
+      if (!iso) return "—";
+      const s = String(iso);
+      return s.length >= 10 ? s.slice(0, 10) : "—";
+    }
+    function renderOsStats(bills) {
+      const el = document.getElementById("os-stats");
+      if (!bills.length) {
+        el.innerHTML = "";
+        return;
+      }
+      const c = { law: 0, chamber: 0, introduced: 0, unknown: 0 };
+      bills.forEach(function (b) {
+        const s = b.stage || "unknown";
+        if (Object.prototype.hasOwnProperty.call(c, s)) c[s] += 1;
+        else c.unknown += 1;
+      });
+      const states = {};
+      bills.forEach(function (b) {
+        states[b.jurisdiction || "?"] = 1;
+      });
+      const nStates = Object.keys(states).length;
+      el.innerHTML =
+        '<span class="stat"><span class="n">' +
+        bills.length +
+        "</span> bills shown</span>" +
+        '<span class="stat"><span class="n">' +
+        nStates +
+        "</span> states</span>" +
+        '<span class="stat muted">Signed or law <span class="n">' +
+        c.law +
+        "</span></span>" +
+        '<span class="stat muted">In chambers <span class="n">' +
+        c.chamber +
+        "</span></span>" +
+        '<span class="stat muted">Introduced <span class="n">' +
+        c.introduced +
+        "</span></span>" +
+        '<span class="stat muted">Status unclear <span class="n">' +
+        c.unknown +
+        "</span></span>";
     }
     function campaignMatchesFilter(row, f) {
       if (!f) return true;
@@ -282,28 +540,49 @@
     }
     function render(data, camp, filter) {
       const f = (filter || "").toLowerCase().trim();
-      const bills = (data.bills || []).filter(function (b) {
+      const billsRaw = (data.bills || []).filter(function (b) {
         if (!f) return true;
         const hay = [b.jurisdiction, b.identifier, b.title, b.session].join(" ").toLowerCase();
         return hay.indexOf(f) !== -1;
       });
+      const bills = sortBills(billsRaw);
       const gen = document.getElementById("generated");
-      gen.textContent = "Open States snapshot " + (data.generated_at || "?") + " · " + bills.length + " bill(s) shown";
+      gen.textContent = "Data from Open States · snapshot " + (data.generated_at || "?") + " · " + bills.length + " bill(s) match this filter";
 
       renderCampaign(camp || {}, filter);
+      renderOsStats(bills);
 
       const wrap = document.getElementById("table-wrap");
       if (!bills.length) {
-        wrap.innerHTML = '<p class="empty">No bills match your filter (or data.json is empty). Run <strong>python tracker.py</strong> to refresh.</p>';
+        wrap.innerHTML =
+          '<p class="empty">No bills match your filter (or <strong>data.json</strong> is empty). Run <strong>python3 tracker.py</strong> locally, then commit the updated JSON.</p>';
         return;
       }
       const rows = bills.map(function (b) {
         const link = b.url
           ? '<a href="' + encodeURI(String(b.url)) + '" rel="noopener noreferrer">' + escapeHtml(b.identifier) + "</a>"
           : escapeHtml(b.identifier);
-        return "<tr><td>" + escapeHtml(b.jurisdiction) + '</td><td class="bill-id">' + link + '</td><td><span class="' + stageClass(b.stage) + '">' + stageLabel(b.stage) + "</span></td><td>" + escapeHtml(b.title) + '</td><td class="milestones">' + escapeHtml(fmtMilestones(b.milestones || {})) + "</td></tr>";
+        const stage = '<span class="' + stageClass(b.stage) + '">' + stageLabel(b.stage) + "</span>";
+        return (
+          "<tr><td>" +
+          escapeHtml(b.jurisdiction) +
+          '</td><td class="bill-id">' +
+          link +
+          "</td><td>" +
+          stage +
+          '</td><td class="col-progress">' +
+          progressHtml(b) +
+          '</td><td class="title-cell">' +
+          escapeHtml(b.title) +
+          '</td><td class="updated-cell">' +
+          escapeHtml(fmtUpdated(b.updated_at)) +
+          "</td></tr>"
+        );
       }).join("");
-      wrap.innerHTML = "<table><thead><tr><th>State</th><th>Bill</th><th>Stage</th><th>Title</th><th>Milestones</th></tr></thead><tbody>" + rows + "</tbody></table>";
+      wrap.innerHTML =
+        "<table><thead><tr><th>State</th><th>Bill</th><th>Summary</th><th>Progress in the legislature</th><th>Title</th><th>Last updated (Open States)</th></tr></thead><tbody>" +
+        rows +
+        "</tbody></table>";
     }
     function escapeHtml(s) {
       return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -330,7 +609,9 @@
       go();
     }).catch(function (e) {
       document.getElementById("generated").textContent = "Could not load data.json — " + e.message;
-      document.getElementById("table-wrap").innerHTML = '<p class="empty">Place <strong>data.json</strong> next to this file (run the tracker once).</p>';
+      document.getElementById("os-stats").innerHTML = "";
+      document.getElementById("table-wrap").innerHTML =
+        '<p class="empty">Place <strong>data.json</strong> next to this file (run the tracker once).</p>';
       renderCampaign({ fetch_error: null, active_legislation: [], enacted_or_effective: [] }, "");
     });
   </script>

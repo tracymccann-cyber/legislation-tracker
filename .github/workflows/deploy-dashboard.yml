@@ -1,0 +1,49 @@
+# Square one: this workflow does NOT call Open States. It only publishes whatever is already in
+# the dashboard/ folder to GitHub Pages.
+#
+# You run on your computer:
+#   python tracker.py
+#   python sync_endjunkfees_snapshot.py   # optional; refreshes campaign_snapshot.json
+# then commit and push dashboard/*.json (and index.html when it changes).
+#
+# Repo setup once:
+#   Settings → Pages → Build and deployment → Source: GitHub Actions
+#
+# After each push under paths below (or a manual "Run workflow"), the site updates.
+
+name: Deploy dashboard (static only)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/deploy-dashboard.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-static
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dashboard
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

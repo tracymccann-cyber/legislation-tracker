@@ -43,33 +43,11 @@
       font-size: 1rem;
       font-weight: 450;
     }
-    header p.hint {
+    p.hint {
       margin: 0;
       max-width: 42rem;
       color: var(--muted);
       font-size: 0.9rem;
-    }
-    details.how-built {
-      margin-top: 1rem;
-      max-width: 48rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.5rem 0.85rem;
-      background: var(--surface);
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-    details.how-built summary {
-      cursor: pointer;
-      font-weight: 600;
-      color: var(--text);
-    }
-    details.how-built[open] summary { margin-bottom: 0.5rem; }
-    details.how-built code {
-      background: var(--bg);
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      font-size: 0.78em;
     }
     .meta {
       margin-top: 1rem;
@@ -311,22 +289,6 @@
       See where each bill sits in the process: introduction, votes in the lower and upper chambers, then the governor
       signing it into law. Use the filter to focus on a state or bill number.
     </p>
-    <p class="hint">
-      The table uses official actions from Open States when they match standard categories; some bills show
-      &ldquo;status unclear&rdquo; until those actions appear in the feed.
-    </p>
-    <details class="how-built">
-      <summary>For editors: how this page is built</summary>
-      <p style="margin:0 0 0.5rem;">
-        <strong>Open States</strong> rows come from <code>python tracker.py</code> (API) into <code>data.json</code>.
-        The <strong>End Junk Fees</strong> list is <code>python sync_endjunkfees_snapshot.py</code> into <code>campaign_snapshot.json</code>.
-        Commit both JSON files after each refresh so static hosts (e.g. Vercel) pick them up.
-      </p>
-      <p style="margin:0;">
-        Local preview: <code>python3 -m http.server 8765 --directory dashboard</code> then open
-        <code>http://127.0.0.1:8765/</code>.
-      </p>
-    </details>
     <p class="meta" id="generated">Loading…</p>
   </header>
   <main>

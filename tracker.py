@@ -12,6 +12,9 @@ Alerts when:
 The first run for a given bill records its existing action history quietly for milestones (2–4); use
 --bootstrap to silence the "new bill" lines as well while you seed the database.
 
+Search hits are narrowed by default: a bill is kept only if its title contains a phrase from
+BILL_TOPIC_KEYWORDS (see env.example). That avoids unrelated bills whose text matched the search API.
+
 endjunkfees.com has no public API; this tool uses Open States for bill tracking. For the campaign’s
 state-by-state list (active 2026 bills plus enacted lines), run `python sync_endjunkfees_snapshot.py`
 to refresh `dashboard/campaign_snapshot.json` (run locally when you want the campaign panel updated).
@@ -101,6 +104,42 @@ def _env_watch_bills() -> tuple[tuple[str, str, str], ...]:
         j, sess, ident = bits[0].strip().lower(), bits[1].strip(), bits[2].strip()
         out.append((j, sess, ident))
     return tuple(out)
+
+
+DEFAULT_TOPIC_TITLE_NEEDLES = (
+    "junk fee",
+    "junk fees",
+    "junk-fee",
+    "junkfees",
+    "drip pricing",
+    "deceptive pricing",
+    "hidden fee",
+    "surprise fee",
+    "pricing transparency",
+)
+
+
+def _env_topic_title_needles() -> tuple[str, ...]:
+    raw = os.environ.get("BILL_TOPIC_KEYWORDS", "").strip()
+    if not raw:
+        return DEFAULT_TOPIC_TITLE_NEEDLES
+    parts = [p.strip().lower() for p in raw.split(",") if p.strip()]
+    return tuple(parts) if parts else DEFAULT_TOPIC_TITLE_NEEDLES
+
+
+def _env_title_topic_filter_enabled() -> bool:
+    raw = (os.environ.get("BILL_TOPIC_TITLE_FILTER") or "1").strip().lower()
+    return raw not in ("0", "false", "no", "off")
+
+
+def bill_title_matches_topic(bill: dict[str, Any]) -> bool:
+    """True if the bill title contains at least one configured topic substring (case-insensitive)."""
+    if not _env_title_topic_filter_enabled():
+        return True
+    title = (bill.get("title") or "").lower()
+    if not title:
+        return False
+    return any(needle in title for needle in _env_topic_title_needles())
 
 
 def init_db(conn: sqlite3.Connection) -> None:
@@ -440,6 +479,13 @@ def collect_unique_bills(
         "this is normal.",
         file=sys.stderr,
     )
+    if _env_title_topic_filter_enabled():
+        needles = _env_topic_title_needles()
+        print(
+            f"Title topic filter ON ({len(needles)} keyword(s)): bills whose titles match none of these "
+            f"are dropped after search. Set BILL_TOPIC_TITLE_FILTER=0 to disable.",
+            file=sys.stderr,
+        )
     for i, q in enumerate(queries):
         if i:
             print(f"Waiting {query_gap:.0f}s before next phrase (rate pacing)…", file=sys.stderr)
@@ -455,10 +501,20 @@ def collect_unique_bills(
                 f"{len(by_id)} unique bill(s) so far",
                 file=sys.stderr,
             )
+            skipped_title = 0
             for b in results:
                 bid = b.get("id")
-                if bid:
-                    by_id[bid] = b
+                if not bid:
+                    continue
+                if not bill_title_matches_topic(b):
+                    skipped_title += 1
+                    continue
+                by_id[bid] = b
+            if skipped_title:
+                print(
+                    f"  dropped {skipped_title} search hit(s) (title did not match topic keywords)",
+                    file=sys.stderr,
+                )
             if page >= max_page:
                 break
             page += 1
@@ -509,7 +565,14 @@ def main() -> None:
             detail = fetch_bill_detail(api_key, j, sess, ident)
             bid = detail.get("id")
             if bid:
-                bills[bid] = detail
+                if bill_title_matches_topic(detail):
+                    bills[bid] = detail
+                else:
+                    tit = (detail.get("title") or "")[:100]
+                    print(
+                        f"Skipping WATCH_BILLS {j}:{sess}:{ident} — title does not match BILL_TOPIC_KEYWORDS: {tit!r}",
+                        file=sys.stderr,
+                    )
         except urllib.error.HTTPError as e:
             print(f"Warning: could not load WATCH_BILLS {j}:{sess}:{ident}: {e}", file=sys.stderr)
 
